@@ -1,6 +1,5 @@
 env/
 artifacts/
 jars/
-airflow-docker/
 
 .env
