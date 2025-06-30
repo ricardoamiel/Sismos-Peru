@@ -43,7 +43,7 @@ Perú es una región altamente sísmica, y la detección temprana y análisis de
 1. Clonar el repositorio:
 
    ```bash
-   git clone https://github.com/usuario/proyecto-sismos-tweets.git
+   [git clone https://github.com/usuario/proyecto-sismos-tweets.git](https://github.com/ricardoamiel/Sismos-Peru.git)
    cd proyecto-sismos-tweets
    ```
 2. Configurar variables de entorno:
