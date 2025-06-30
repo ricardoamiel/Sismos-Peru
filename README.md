@@ -28,7 +28,7 @@ La solución se basa en una arquitectura de procesamiento de datos en streaming 
 
 2.  **Ingesta de Datos (Kafka & Tweepy):**
     *   Un script **Producer** en Python, utilizando la librería `tweepy`, se conecta a la API de Twitter para buscar tweets recientes que coincidan con palabras clave (`sismo`, `temblor`, `Perú`, etc.).
-    *   Estos tweets son enviados en tiempo real al topic `tweets-eventos-sismiscos` en **Apache Kafka**, que funciona como un bus de mensajería distribuido y tolerante a fallos.
+    *   Estos tweets son enviados en tiempo real al topic `tweets-eventos-sismicos` en **Apache Kafka**, que funciona como un bus de mensajería distribuido y tolerante a fallos.
     *   Un script **Consumer** escucha este topic, recoge los tweets y los almacena en su formato crudo en una base de datos **MongoDB**, en la colección `sismos`.
 
 3.  **Procesamiento y Transformación (ETL con Apache Spark):**
@@ -87,15 +87,15 @@ La solución se basa en una arquitectura de procesamiento de datos en streaming 
     *   Ejecutar el script `create_topic.py` (basado en el código provisto) para crear el topic `tweets-eventos-sismiscos`.
 
 4.  **Ejecutar el pipeline de datos:**
-    *   **Paso 1: Ingesta:** Ejecutar el script productor de Kafka (`producer.py`) para scrapear tweets y enviarlos al topic.
+    *   **Paso 1: Ingesta:** Ejecutar el script productor de Kafka (`producer.py`) para scrapear tweets y enviarlos al topic (en una terminal):
       ```bash
       python producer.py
       ```
-    *   **Paso 2: Almacenamiento Crudo:** Ejecutar el script consumidor (`consumer.py`) para guardar los tweets en MongoDB.
+    *   **Paso 2: Almacenamiento Crudo:** Ejecutar el script consumidor (`consumer.py`) en otra terminal para guardar los tweets en MongoDB:
       ```bash
       python consumer.py
       ```
-    *   **Paso 3: ETL:** Ejecutar el job de Spark para limpiar los datos.
+    *   **Paso 3: ETL:** Ejecutar el job de Spark para limpiar los datos:
       ```bash
       spark-submit --packages org.mongodb.spark:mongo-spark-connector_2.12:10.5.0,org.mongodb:mongodb-driver-sync:4.10.2 spark_etl.py
       ```
