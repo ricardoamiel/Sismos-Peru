@@ -1,5 +1,5 @@
 ***
-![Gemini_Generated_Image_j328m6j328m6j328](https://github.com/user-attachments/assets/362ad775-1ee3-4beb-a776-08da14ef472c)
+![logo](https://github.com/user-attachments/assets/362ad775-1ee3-4beb-a776-08da14ef472c)
 
 # Proyecto: Análisis de Sismos en Perú mediante Scraping y LLMs
 
