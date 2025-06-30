@@ -1,5 +1,5 @@
 ***
-![logo](https://github.com/user-attachments/assets/362ad775-1ee3-4beb-a776-08da14ef472c)
+[![logo](https://github.com/user-attachments/assets/362ad775-1ee3-4beb-a776-08da14ef472c)](https://www.photoroom.com/es/herramientas/eliminador-de-fondos)
 
 # Proyecto: Análisis de Sismos en Perú mediante Scraping y LLMs
 
