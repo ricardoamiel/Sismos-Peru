@@ -1,134 +1,155 @@
-# Análisis de Eventos Sísmicos a partir de Tweets en Perú
+Claro, aquí tienes la documentación del proyecto estructurada como un archivo `README.md`, basado en la información, diagramas y código que proporcionaste.
 
-## 1. Introducción y Justificación
+***
 
-Perú es una región altamente sísmica, y la detección temprana y análisis de la percepción ciudadana sobre eventos sísmicos puede ayudar a mejorar la respuesta de emergencia y la concientización pública. Este proyecto propone un sistema de scraping en streaming de tweets relacionados a sismos y alertas, que procesa, resume y visualiza información relevante para usuarios y autoridades mediante dashboards interactivos y modelos de lenguaje.
+# Proyecto: Análisis de Sismos en Perú mediante Scraping y LLMs
 
-## 2. Descripción del Dataset
+## Introducción y justificación del problema a resolver
 
-* **Origen:** Tweets públicos de Twitter con palabras clave relacionadas a sismos, temblores, huaicos, inundaciones, emergencias y evacuaciones en Perú.
-* **Volumen aproximado:** \~50–100 tweets por ciclo de scraping (configurable en Kafka/`max_results`).
-* **Estructura:**
+Perú es un país ubicado en el Cinturón de Fuego del Pacífico, una de las zonas con mayor actividad sísmica del mundo. La monitorización y análisis de estos eventos en tiempo real es crucial para la gestión de desastres, la rápida difusión de información y la comprensión del impacto social.
 
-  * `id`: Identificador único del tweet
-  * `usuario`: ID de autor
-  * `texto`: Contenido original
-  * `fecha`: Fecha y hora de publicación
-  * `texto_limpio`: Texto procesado
-  * `evento_detectado`: Señal de mención de evento sísmico
+Las redes sociales, especialmente Twitter (ahora X), se han convertido en una fuente de información ciudadana inmediata, donde los usuarios reportan eventos casi al instante. Sin embargo, esta información es masiva, no estructurada, ruidosa y contiene desde reportes verídicos hasta pánico y desinformación.
 
-## 3. Dificultad Técnica
+Este proyecto aborda el desafío de capturar, procesar y analizar esta corriente de datos en tiempo real para extraer insights valiosos. El objetivo es construir un sistema automatizado que:
+1.  **Capture** tweets relevantes sobre sismos y otros eventos en Perú.
+2.  **Procese y limpie** los datos para hacerlos analizables.
+3.  **Utilice un Modelo de Lenguaje Grande (LLM)** para resumir la situación, detectar emociones, identificar zonas afectadas y extraer información clave.
+4.  **Visualice** estos insights en un dashboard interactivo para facilitar la toma de decisiones y el entendimiento público.
 
-* Integración y orquestación en tiempo real con **Kafka**, **Airflow** y **Spark**.
-* Conectores y sincronización entre **MongoDB** y Spark vía `mongo-spark-connector`.
-* Limpieza y normalización de texto con expresiones regulares y NLP básico.
-* Generación de insights estructurados con **LLMs** (`dolphin-llama3:8b`) y prompt engineering.
-* Visualización interactiva con **Streamlit** y **Folium**.
+## Arquitectura del proyecto
 
-## 4. Herramientas y Tecnologías Empleadas
+La solución se basa en una arquitectura de procesamiento de datos en streaming y por lotes, que integra diversas tecnologías para cubrir el ciclo de vida completo del dato, desde su ingesta hasta su visualización.
 
-* **Python** (v3.8+)
-* **Kafka** (Producer/Consumer con `tweepy` y `confluent_kafka`)
-* **MongoDB** (almacenamiento de crudo y procesado)
-* **Apache Spark** (ETL batch streaming)
-* **Airflow** (orquestación y scheduling)
-* **LLMs** via Ollama (`dolphin-llama3:8b`)
-* **Streamlit** y **streamlit-folium**
-* **Folium** (mapas)
-* **NLTK** (stopwords)
-* **Matplotlib** (gráficos de barras horizontales)
-
-## 5. Instrucciones para Ejecución
-
-1. Clonar el repositorio:
-
-   ```bash
-   https://github.com/ricardoamiel/Sismos-Peru.git
-   cd proyecto-sismos-tweets
-   ```
-2. Configurar variables de entorno:
-
-   ```bash
-   export X_TOKEN=<TWITTER_BEARER_TOKEN>
-   export MONGO_URI="mongodb://localhost:27017"
-   ```
-3. Iniciar servicios:
-
-   * MongoDB
-   * Kafka (zookeeper + broker)
-   * Airflow Scheduler y Webserver
-4. Crear tópico en Kafka (opcional si ya existe):
-
-   ```bash
-   python kafka_admin.py
-   ```
-5. Ejecutar DAG de scraping en Airflow o manualmente:
-
-   ```bash
-   airflow dags trigger scraping_sismos
-   ```
-6. Lanzar procesamiento Spark:
-
-   ```bash
-   python etl_sparksismos.py
-   ```
-7. Iniciar dashboard:
-
-   ```bash
-   streamlit run dashboard_sismos.py
-   ```
-
-## 6. Arquitectura del Proyecto
-
-**Descripción:**
-
-1. **Scraping de Twitter**: `tweepy` busca tweets en streaming con palabras clave.
-2. **Producer Kafka**: Publica tweets al topic `tweets-eventos-sismiscos`.
-3. **Consumer Kafka → MongoDB**: Inserta los mensajes sin procesar en `tweets.sismos`.
-4. **ETL con Spark**: Lee documentos no procesados, limpia texto, detecta eventos y escribe en `tweets.tweets_procesados`. Luego marca originales como procesados.
-5. **Batch Airflow**: Orquesta el pipeline completo (scraping, ETL) en horarios programados.
-6. **Insights con LLM**: Lee últimos tweets procesados, utiliza prompt engineering en `dolphin-llama3:8b` para generar resúmenes, emociones, daños, etiquetas y preguntas frecuentes. Guarda resultados en `tweets.resumenes`.
-7. **Dashboard Streamlit**: Consume `resumenes` y `tweets_procesados`, despliega:
-
-   * Resumen general e insights con emojis y mapas.
-   * Gráficos de acumulación temporal, horas, palabras frecuentes y geolocalización.
-
-  ![big_data drawio](https://github.com/user-attachments/assets/b21bd4ec-2384-4d57-9e36-147cd308e358)
+### Diagrama de la Arquitectura
 
 
-## 7. Descripción del Proceso ETL/ELT
 
-* **Extract:** Lectura directa de MongoDB (`tweets.sismos`) con conector Spark.
-* **Transform:**
+### Descripción de la Arquitectura
 
-  * Eliminación de URLs, mentions y caracteres especiales.
-  * Normalización a minúsculas y trimming.
-  * Detección de patrones de evento con expresiones regulares.
-* **Load:** Escritura de datos enriquecidos en MongoDB (`tweets_procesados`) y actualización de estado de los originales.
+1.  **Orquestación (Apache Airflow):** Actúa como el cerebro del sistema, programando y automatizando la ejecución de las tareas. En este caso, se encarga de iniciar el proceso de scraping en intervalos definidos (por ejemplo, cada cierto tiempo).
 
-## 8. Resultados Obtenidos y Análisis
+2.  **Ingesta de Datos (Kafka & Tweepy):**
+    *   Un script **Producer** en Python, utilizando la librería `tweepy`, se conecta a la API de Twitter para buscar tweets recientes que coincidan con palabras clave (`sismo`, `temblor`, `Perú`, etc.).
+    *   Estos tweets son enviados en tiempo real al topic `tweets-eventos-sismiscos` en **Apache Kafka**, que funciona como un bus de mensajería distribuido y tolerante a fallos.
+    *   Un script **Consumer** escucha este topic, recoge los tweets y los almacena en su formato crudo en una base de datos **MongoDB**, en la colección `sismos`.
 
-* **Insights Estructurados:** Contexto y tono emocional de eventos, daños reportados y alertas comunes.
-* **Dashboard Interactivo:** Permite navegar por resúmenes históricos, analizar acumulación y frecuencia temporal, visualizar zonas afectadas en mapa.
-* **Valor:** Información consolidada de percepción ciudadana para toma de decisiones en emergencias.
+3.  **Procesamiento y Transformación (ETL con Apache Spark):**
+    *   Un job de **Apache Spark** se ejecuta periódicamente. Este lee los tweets no procesados de la colección `sismos`.
+    *   Aplica un pipeline de transformaciones para limpiar el texto: elimina URLs, menciones, hashtags y caracteres especiales. El texto se normaliza a minúsculas.
+    *   El resultado, que incluye el texto original y el `texto_limpio`, se guarda en una nueva colección de MongoDB llamada `tweets_procesados`.
 
-## 9. Dificultades Identificadas
+4.  **Análisis con Inteligencia Artificial (LLM & Prompt Engineering):**
+    *   Un script de Python lee los últimos tweets procesados de MongoDB.
+    *   Se construye un **prompt** detallado que instruye a un Modelo de Lenguaje Grande (en este caso, `dolphin-llama3:8b` ejecutado localmente vía Ollama) sobre cómo analizar los datos.
+    *   El LLM genera una respuesta estructurada que incluye: un insight periodístico, un resumen ejecutivo, las emociones predominantes, los daños reportados, preguntas frecuentes y etiquetas clave.
+    *   Este análisis enriquecido se almacena en una colección final en MongoDB llamada `resumenes`.
 
-* Límite de tasa de la API de Twitter y manejo de `since_id`.
-* Parsing robusto de texto con diversidad de formatos y tildes.
-* Sincronización y consistencia entre Spark y MongoDB.
-* Prompt engineering para obtener salidas estructuradas del LLM.
+5.  **Visualización (Streamlit Dashboard):**
+    *   Una aplicación web construida con **Streamlit** se conecta a la colección `resumenes` de MongoDB.
+    *   Presenta al usuario el último análisis generado por el LLM de forma clara e interactiva, incluyendo gráficos, mapas (con Folium) y tablas para explorar los datos en detalle.
 
-## 10. Conclusiones y Posibles Mejoras
+## Descripción del dataset, origen y tamaño de data
 
-* **Conclusiones:** El pipeline completo demuestra la viabilidad de integrar datos sociales en tiempo real con procesamiento masivo y LLMs para análisis de crisis.
-* **Mejoras:**
+*   **Origen:** La fuente de datos es la API de Twitter (X). Se extraen tweets públicos en español.
+*   **Contenido:** El dataset consiste en objetos JSON que representan tweets. Los campos clave utilizados son el ID del tweet, el texto, el autor y la fecha de creación.
+*   **Tamaño:** El tamaño de la data es dinámico y crece con cada ejecución del scraper. La estrategia de `since_id` en el productor de Kafka asegura que solo se capturen tweets nuevos, evitando duplicados y optimizando el uso de la API. En cada ciclo, se pueden capturar hasta 50 tweets nuevos.
 
-  * Añadir geolocalización más precisa (coordenadas) en Tweets.
-  * Escalar el ETL a cluster Spark y Kafka multi-partitions.
-  * Integrar otras fuentes (RSS, alertas oficiales).
-  * Implementar notificaciones push ante eventos críticos.
+## Herramientas y tecnologías empleadas
 
----
+*   **Lenguaje de Programación:** Python 3.
+*   **Orquestación:** Apache Airflow.
+*   **Streaming de Datos:** Apache Kafka.
+*   **Procesamiento de Datos (ETL):** Apache Spark.
+*   **Base de Datos:** MongoDB (NoSQL, orientada a documentos).
+*   **Inteligencia Artificial:**
+    *   **Modelo:** `dolphin-llama3:8b` (una variante de Llama 3 de Meta).
+    *   **Plataforma de Inferencia:** Ollama.
+*   **Dashboard y Visualización:** Streamlit, Pandas, Matplotlib, Folium.
+*   **Librerías Clave de Python:** `tweepy`, `kafka-python`, `pyspark`, `pymongo`, `requests`, `nltk`.
 
-*Proyecto desarrollado por Josué Poma*
+## Indicaciones de cómo ejecutar el proyecto
+
+**Prerrequisitos:**
+*   Tener instalados Docker y Docker Compose.
+*   Tener Python 3.8+ y pip.
+*   Una clave de Bearer Token de la API de Twitter (X), exportada como variable de entorno `X_TOKEN`.
+*   Tener Ollama instalado y haber descargado el modelo: `ollama pull dolphin-llama3:8b`.
+
+**Pasos para la ejecución:**
+
+1.  **Levantar la infraestructura base (Kafka y MongoDB):**
+    *   Utilizar un archivo `docker-compose.yml` para iniciar los servicios de Zookeeper, Kafka y MongoDB.
+
+2.  **Instalar dependencias de Python:**
+    ```bash
+    pip install tweepy kafka-python pymongo pyspark confluent-kafka streamlit pandas folium matplotlib nltk
+    ```
+
+3.  **Crear el Tópico en Kafka:**
+    *   Ejecutar el script `create_topic.py` (basado en el código provisto) para crear el topic `tweets-eventos-sismiscos`.
+
+4.  **Ejecutar el pipeline de datos:**
+    *   **Paso 1: Ingesta:** Ejecutar el script productor de Kafka (`producer.py`) para scrapear tweets y enviarlos al topic.
+      ```bash
+      python producer.py
+      ```
+    *   **Paso 2: Almacenamiento Crudo:** Ejecutar el script consumidor (`consumer.py`) para guardar los tweets en MongoDB.
+      ```bash
+      python consumer.py
+      ```
+    *   **Paso 3: ETL:** Ejecutar el job de Spark para limpiar los datos.
+      ```bash
+      spark-submit --packages org.mongodb.spark:mongo-spark-connector_2.12:10.5.0,org.mongodb:mongodb-driver-sync:4.10.2 spark_etl.py
+      ```
+    *   **Paso 4: Análisis con LLM:** Ejecutar el script que consulta el LLM.
+      ```bash
+      python llm_analysis.py
+      ```
+
+5.  **Lanzar el Dashboard:**
+    *   Ejecutar la aplicación de Streamlit para visualizar los resultados.
+      ```bash
+      streamlit run dashboard.py
+      ```
+
+## Resultados obtenidos y análisis
+
+El resultado principal del proyecto es un **dashboard de inteligencia en tiempo real** que transforma el caos de las redes sociales en información procesable. Los resultados clave que se pueden obtener son:
+
+*   **Resumen Ejecutivo Automatizado:** El LLM genera un párrafo conciso y de alta calidad que resume el evento, ideal para informes rápidos o comunicados.
+*   **Análisis de Sentimiento y Emociones:** En lugar de un simple "positivo/negativo", el sistema clasifica emociones específicas como "miedo", "pánico", "tranquilidad" o "confusión", ofreciendo una visión más profunda del estado de ánimo de la población.
+*   **Detección Geográfica:** El sistema identifica y lista los departamentos y distritos más mencionados, lo que permite crear mapas de calor de las zonas afectadas, como se ve en la funcionalidad del mapa con Folium.
+*   **Identificación de Problemas:** Extrae reportes específicos de daños (estructurales, eléctricos) y preguntas o alertas comunes de los usuarios, lo que puede ayudar a los equipos de emergencia a priorizar sus acciones.
+*   **Análisis Exploratorio (EDA):** La segunda pestaña del dashboard permite analizar la volumetría de los tweets a lo largo del tiempo y las palabras más frecuentes, ayudando a identificar tendencias y temas emergentes.
+
+## Dificultades identificadas y soluciones
+
+1.  **Inconsistencia del LLM:**
+    *   **Problema:** Los LLMs pueden ser inconsistentes en su formato de salida o "alucinar" datos (ej. `magnitud 49` en lugar de `4.9`).
+    *   **Solución:** Se implementó un **prompt engineering robusto** con instrucciones claras y un formato de salida definido. Además, se añadieron funciones de post-procesamiento con **expresiones regulares (regex)** para corregir errores comunes, como en la función `corregir_magnitudes`.
+
+2.  **Complejidad del "ruido" en los tweets:**
+    *   **Problema:** Los tweets contienen jerga, memes, errores tipográficos y desinformación, lo que dificulta la extracción de datos fiables.
+    *   **Solución:** Se utilizó un pipeline de limpieza en Spark para normalizar el texto. El LLM, gracias a su entrenamiento masivo, es sorprendentemente bueno para entender el contexto incluso en texto ruidoso.
+
+3.  **Gestión de la infraestructura:**
+    *   **Problema:** Levantar y conectar múltiples servicios (Kafka, Spark, MongoDB, Ollama) puede ser complejo y propenso a errores de configuración.
+    *   **Solución:** La recomendación sería usar Docker y Docker Compose para encapsular cada servicio, simplificando el despliegue y garantizando la portabilidad del entorno.
+
+4.  **Limitaciones de la API de Twitter:**
+    *   **Problema:** La API tiene límites de frecuencia de consulta, lo que restringe la capacidad de obtener un flujo de datos verdaderamente en tiempo real.
+    *   **Solución:** El script productor se diseñó para funcionar en ciclos, respetando los límites y utilizando el parámetro `since_id` para no solicitar datos ya procesados, maximizando la eficiencia de cada llamada.
+
+## Conclusiones y posibles mejoras
+
+**Conclusiones**
+
+Este proyecto demuestra con éxito la viabilidad de construir un sistema end-to-end para el análisis de eventos de interés público a partir de redes sociales. La combinación de una arquitectura de datos robusta (Kafka, Spark, MongoDB) con el poder de análisis semántico de los LLMs permite extraer insights profundos y accionables a una velocidad y escala que serían imposibles con métodos manuales. La solución no solo presenta datos, sino que los interpreta, resume y contextualiza.
+
+**Posibles Mejoras**
+
+*   **Finetuning de un Modelo Especializado:** En lugar de usar un modelo generalista, se podría hacer finetuning a un modelo más pequeño (como Llama 3 8B) con un dataset curado de reportes de desastres para mejorar la precisión, reducir la latencia y los costos computacionales.
+*   **Análisis de Imágenes:** Extender el sistema para analizar imágenes adjuntas en los tweets, utilizando modelos de visión por computadora para detectar daños estructurales.
+*   **Sistema de Alertas Activas:** Integrar un servicio de notificaciones (ej. Telegram, SMS) que envíe alertas automáticas a partes interesadas cuando el sistema detecte un evento de alta severidad.
+*   **Escalabilidad en la Nube:** Migrar la arquitectura a un proveedor cloud (AWS, GCP, Azure) utilizando servicios gestionados (ej. Amazon Kinesis para Kafka, EMR para Spark, DocumentDB para MongoDB) para mejorar la escalabilidad, la resiliencia y la facilidad de mantenimiento.
+*   **Verificación de Hechos (Fact-Checking):** Añadir un módulo que cruce la información de los tweets con fuentes oficiales (como el Instituto Geofísico del Perú - IGP) para validar la información y etiquetar posibles bulos.
