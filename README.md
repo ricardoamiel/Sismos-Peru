@@ -1,5 +1,3 @@
-Claro, aquí tienes la documentación del proyecto estructurada como un archivo `README.md`, basado en la información, diagramas y código que proporcionaste.
-
 ***
 
 # Proyecto: Análisis de Sismos en Perú mediante Scraping y LLMs
@@ -47,6 +45,8 @@ La solución se basa en una arquitectura de procesamiento de datos en streaming 
 5.  **Visualización (Streamlit Dashboard):**
     *   Una aplicación web construida con **Streamlit** se conecta a la colección `resumenes` de MongoDB.
     *   Presenta al usuario el último análisis generado por el LLM de forma clara e interactiva, incluyendo gráficos, mapas (con Folium) y tablas para explorar los datos en detalle.
+
+![big_data drawio](https://github.com/user-attachments/assets/2e10db5c-eabc-4055-adb4-af229b52cb44)
 
 ## Descripción del dataset, origen y tamaño de data
 
