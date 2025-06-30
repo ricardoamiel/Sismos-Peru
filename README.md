@@ -43,7 +43,7 @@ Perú es una región altamente sísmica, y la detección temprana y análisis de
 1. Clonar el repositorio:
 
    ```bash
-   [git clone https://github.com/usuario/proyecto-sismos-tweets.git](https://github.com/ricardoamiel/Sismos-Peru.git)
+   https://github.com/ricardoamiel/Sismos-Peru.git
    cd proyecto-sismos-tweets
    ```
 2. Configurar variables de entorno:
@@ -92,6 +92,9 @@ Perú es una región altamente sísmica, y la detección temprana y análisis de
 
    * Resumen general e insights con emojis y mapas.
    * Gráficos de acumulación temporal, horas, palabras frecuentes y geolocalización.
+
+  ![big_data drawio](https://github.com/user-attachments/assets/b21bd4ec-2384-4d57-9e36-147cd308e358)
+
 
 ## 7. Descripción del Proceso ETL/ELT
 
