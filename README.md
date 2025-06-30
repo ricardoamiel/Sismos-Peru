@@ -1,5 +1,6 @@
 ***
-![logo](https://github.com/user-attachments/assets/71623834-8d22-476d-9208-2ed2f0bbfbb8)
+![logo2](https://github.com/user-attachments/assets/c2816a9a-7def-4e21-8eeb-3cc8e7ba9369)
+
 
 
 # Proyecto: Análisis de Sismos en Perú mediante Scraping y LLMs
