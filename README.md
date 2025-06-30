@@ -1,14 +1,12 @@
 ***
+![Gemini_Generated_Image_j328m6j328m6j328](https://github.com/user-attachments/assets/362ad775-1ee3-4beb-a776-08da14ef472c)
 
 # Proyecto: Análisis de Sismos en Perú mediante Scraping y LLMs
 
 ## Introducción y justificación del problema a resolver
 
-Perú es un país ubicado en el Cinturón de Fuego del Pacífico, una de las zonas con mayor actividad sísmica del mundo. La monitorización y análisis de estos eventos en tiempo real es crucial para la gestión de desastres, la rápida difusión de información y la comprensión del impacto social.
+Perú es un país ubicado en el Cinturón de Fuego del Pacífico, una de las zonas con mayor actividad sísmica del mundo. La monitorización y análisis de estos eventos en tiempo real es crucial para la gestión de desastres, la rápida difusión de información y la comprensión del impacto social. Las redes sociales, especialmente Twitter (ahora X), se han convertido en una fuente de información ciudadana inmediata, donde los usuarios reportan eventos casi al instante. Sin embargo, esta información es masiva, no estructurada, ruidosa y contiene desde reportes verídicos hasta pánico y desinformación. Este proyecto aborda el desafío de capturar, procesar y analizar esta corriente de datos en tiempo real para extraer insights valiosos. El objetivo es construir un sistema automatizado que:
 
-Las redes sociales, especialmente Twitter (ahora X), se han convertido en una fuente de información ciudadana inmediata, donde los usuarios reportan eventos casi al instante. Sin embargo, esta información es masiva, no estructurada, ruidosa y contiene desde reportes verídicos hasta pánico y desinformación.
-
-Este proyecto aborda el desafío de capturar, procesar y analizar esta corriente de datos en tiempo real para extraer insights valiosos. El objetivo es construir un sistema automatizado que:
 1.  **Capture** tweets relevantes sobre sismos y otros eventos en Perú.
 2.  **Procese y limpie** los datos para hacerlos analizables.
 3.  **Utilice un Modelo de Lenguaje Grande (LLM)** para resumir la situación, detectar emociones, identificar zonas afectadas y extraer información clave.
@@ -20,7 +18,7 @@ La solución se basa en una arquitectura de procesamiento de datos en streaming 
 
 ### Diagrama de la Arquitectura
 
-
+![big_data drawio](https://github.com/user-attachments/assets/2e10db5c-eabc-4055-adb4-af229b52cb44)
 
 ### Descripción de la Arquitectura
 
@@ -45,8 +43,6 @@ La solución se basa en una arquitectura de procesamiento de datos en streaming 
 5.  **Visualización (Streamlit Dashboard):**
     *   Una aplicación web construida con **Streamlit** se conecta a la colección `resumenes` de MongoDB.
     *   Presenta al usuario el último análisis generado por el LLM de forma clara e interactiva, incluyendo gráficos, mapas (con Folium) y tablas para explorar los datos en detalle.
-
-![big_data drawio](https://github.com/user-attachments/assets/2e10db5c-eabc-4055-adb4-af229b52cb44)
 
 ## Descripción del dataset, origen y tamaño de data
 
