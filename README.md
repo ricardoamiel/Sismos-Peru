@@ -22,7 +22,7 @@ La solución se basa en una arquitectura de procesamiento de datos en streaming 
 
 ### Diagrama de la Arquitectura
 
-![big_data drawio](https://github.com/user-attachments/assets/2e10db5c-eabc-4055-adb4-af229b52cb44)
+![big_data drawio](big_data.drawio.png)
 
 ### Descripción de la Arquitectura
 
