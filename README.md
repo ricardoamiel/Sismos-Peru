@@ -5,6 +5,14 @@
 
 # Proyecto: Análisis de Sismos en Perú mediante Scraping y LLMs
 
+## Integrantes
+
+1. Ricardo Amiel Acuña Villogas
+2. Josué Nehemías Velo Poma
+3. William Berrocal Alvarado
+4. Yhesmin Danitza Advíncula Huamán
+5. Arturo Magno Barrantes Chuquimia
+
 Link de presentación: https://www.canva.com/design/DAGsFQTyjvk/rRQfHiSUIWrUWCcaF8wMMQ/edit?utm_content=DAGsFQTyjvk&utm_campaign=designshare&utm_medium=link2&utm_source=sharebutton
 
 ## Introducción y justificación del problema a resolver
