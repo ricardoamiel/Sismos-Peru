@@ -5,6 +5,8 @@
 
 # Proyecto: Análisis de Sismos en Perú mediante Scraping y LLMs
 
+Link de presentación: https://www.canva.com/design/DAGsFQTyjvk/rRQfHiSUIWrUWCcaF8wMMQ/edit?utm_content=DAGsFQTyjvk&utm_campaign=designshare&utm_medium=link2&utm_source=sharebutton
+
 ## Introducción y justificación del problema a resolver
 
 Perú es un país ubicado en el Cinturón de Fuego del Pacífico, una de las zonas con mayor actividad sísmica del mundo. La monitorización y análisis de estos eventos en tiempo real es crucial para la gestión de desastres, la rápida difusión de información y la comprensión del impacto social. Las redes sociales, especialmente Twitter (ahora X), se han convertido en una fuente de información ciudadana inmediata, donde los usuarios reportan eventos casi al instante. Sin embargo, esta información es masiva, no estructurada, ruidosa y contiene desde reportes verídicos hasta pánico y desinformación. Este proyecto aborda el desafío de capturar, procesar y analizar esta corriente de datos en tiempo real para extraer insights valiosos. El objetivo es construir un sistema automatizado que:
@@ -24,25 +26,23 @@ La solución se basa en una arquitectura de procesamiento de datos en streaming 
 
 ### Descripción de la Arquitectura
 
-1.  **Orquestación (Apache Airflow):** Actúa como el cerebro del sistema, programando y automatizando la ejecución de las tareas. En este caso, se encarga de iniciar el proceso de scraping en intervalos definidos (por ejemplo, cada cierto tiempo).
-
-2.  **Ingesta de Datos (Kafka & Tweepy):**
+1.  **Ingesta de Datos (Kafka & Tweepy):**
     *   Un script **Producer** en Python, utilizando la librería `tweepy`, se conecta a la API de Twitter para buscar tweets recientes que coincidan con palabras clave (`sismo`, `temblor`, `Perú`, etc.).
     *   Estos tweets son enviados en tiempo real al topic `tweets-eventos-sismicos` en **Apache Kafka**, que funciona como un bus de mensajería distribuido y tolerante a fallos.
     *   Un script **Consumer** escucha este topic, recoge los tweets y los almacena en su formato crudo en una base de datos **MongoDB**, en la colección `sismos`.
 
-3.  **Procesamiento y Transformación (ETL con Apache Spark):**
+2.  **Procesamiento y Transformación (ETL con Apache Spark):**
     *   Un job de **Apache Spark** se ejecuta periódicamente. Este lee los tweets no procesados de la colección `sismos`.
     *   Aplica un pipeline de transformaciones para limpiar el texto: elimina URLs, menciones, hashtags y caracteres especiales. El texto se normaliza a minúsculas.
     *   El resultado, que incluye el texto original y el `texto_limpio`, se guarda en una nueva colección de MongoDB llamada `tweets_procesados`.
 
-4.  **Análisis con Inteligencia Artificial (LLM & Prompt Engineering):**
+3.  **Análisis con Inteligencia Artificial (LLM & Prompt Engineering):**
     *   Un script de Python lee los últimos tweets procesados de MongoDB.
     *   Se construye un **prompt** detallado que instruye a un Modelo de Lenguaje Grande (en este caso, `dolphin-llama3:8b` ejecutado localmente vía Ollama) sobre cómo analizar los datos.
     *   El LLM genera una respuesta estructurada que incluye: un insight periodístico, un resumen ejecutivo, las emociones predominantes, los daños reportados, preguntas frecuentes y etiquetas clave.
     *   Este análisis enriquecido se almacena en una colección final en MongoDB llamada `resumenes`.
 
-5.  **Visualización (Streamlit Dashboard):**
+4.  **Visualización (Streamlit Dashboard):**
     *   Una aplicación web construida con **Streamlit** se conecta a la colección `resumenes` de MongoDB.
     *   Presenta al usuario el último análisis generado por el LLM de forma clara e interactiva, incluyendo gráficos, mapas (con Folium) y tablas para explorar los datos en detalle.
 
@@ -55,7 +55,6 @@ La solución se basa en una arquitectura de procesamiento de datos en streaming 
 ## Herramientas y tecnologías empleadas
 
 *   **Lenguaje de Programación:** Python 3.
-*   **Orquestación:** Apache Airflow.
 *   **Streaming de Datos:** Apache Kafka.
 *   **Procesamiento de Datos (ETL):** Apache Spark.
 *   **Base de Datos:** MongoDB (NoSQL, orientada a documentos).
@@ -68,7 +67,7 @@ La solución se basa en una arquitectura de procesamiento de datos en streaming 
 ## Indicaciones de cómo ejecutar el proyecto
 
 **Prerrequisitos:**
-*   Tener instalados Docker y Docker Compose.
+*   Tener instalado Docker.
 *   Tener Python 3.8+ y pip.
 *   Una clave de Bearer Token de la API de Twitter (X), exportada como variable de entorno `X_TOKEN`.
 *   Tener Ollama instalado y haber descargado el modelo: `ollama pull dolphin-llama3:8b`.
@@ -76,11 +75,36 @@ La solución se basa en una arquitectura de procesamiento de datos en streaming 
 **Pasos para la ejecución:**
 
 1.  **Levantar la infraestructura base (Kafka y MongoDB):**
-    *   Utilizar un archivo `docker-compose.yml` para iniciar los servicios de Zookeeper, Kafka y MongoDB.
+    *   Mediante la terminal ejecutar lo siguiente para iniciar los servicios de Zookeeper, Kafka y MongoDB.
+  
+    ```bash
+    # Crea red si no existe
+      docker network create kafka-net
+      
+      # Corre Zookeeper
+      docker run -d \
+        --name zookeeper \
+        --network kafka-net \
+        -p 2181:2181 \
+        -e ZOOKEEPER_CLIENT_PORT=2181 \
+        confluentinc/cp-zookeeper:7.4.3
+      
+      # Corre Kafka (con advertised listener corregido)
+      docker run -d \
+        --name kafka \
+        --network kafka-net \
+        -p 9092:9092 \
+        -e KAFKA_BROKER_ID=1 \
+        -e KAFKA_ZOOKEEPER_CONNECT=zookeeper:2181 \
+        -e KAFKA_LISTENERS=PLAINTEXT://0.0.0.0:9092 \
+        -e KAFKA_ADVERTISED_LISTENERS=PLAINTEXT://kafka:9092 \
+        -e KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR=1 \
+        confluentinc/cp-kafka:7.4.3
+    ```
 
 2.  **Instalar dependencias de Python:**
     ```bash
-    pip install tweepy kafka-python pymongo pyspark confluent-kafka streamlit pandas folium matplotlib nltk
+    pip install requirements.txt
     ```
 
 3.  **Crear el Tópico en Kafka:**
@@ -89,19 +113,19 @@ La solución se basa en una arquitectura de procesamiento de datos en streaming 
 4.  **Ejecutar el pipeline de datos:**
     *   **Paso 1: Ingesta:** Ejecutar el script productor de Kafka (`producer.py`) para scrapear tweets y enviarlos al topic (en una terminal):
       ```bash
-      python producer.py
+      python producer_kafka.py
       ```
     *   **Paso 2: Almacenamiento Crudo:** Ejecutar el script consumidor (`consumer.py`) en otra terminal para guardar los tweets en MongoDB:
       ```bash
-      python consumer.py
+      python consumer_kafka.py
       ```
     *   **Paso 3: ETL:** Ejecutar el job de Spark para limpiar los datos:
       ```bash
-      spark-submit --packages org.mongodb.spark:mongo-spark-connector_2.12:10.5.0,org.mongodb:mongodb-driver-sync:4.10.2 spark_etl.py
+      spark-submit --packages org.mongodb.spark:mongo-spark-connector_2.12:10.5.0,org.mongodb:mongodb-driver-sync:4.10.2 ETL.py
       ```
     *   **Paso 4: Análisis con LLM:** Ejecutar el script que consulta el LLM.
       ```bash
-      python llm_analysis.py
+      python LLM_LLAMA.py
       ```
 
 5.  **Lanzar el Dashboard:**
