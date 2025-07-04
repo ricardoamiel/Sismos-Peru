@@ -1,0 +1,10 @@
+scikit-learn
+matplotlib
+kafka-python
+pymongo
+pyspark
+tweepy
+streamlit
+tox # unicodedata
+folium
+nltk

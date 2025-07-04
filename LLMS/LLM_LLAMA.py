@@ -8,8 +8,8 @@ import json
 cliente = MongoClient("mongodb://localhost:27017")
 coleccion = cliente["tweets"]["tweets_procesados"]
 
-# Leer últimos 50 tweets
-tweets = list(coleccion.find().sort("fecha", -1).limit(50))
+# Leer últimos 25 tweets
+tweets = list(coleccion.find().sort("fecha", -1).limit(25)) # últimos 25 tweet
 textos = [tweet["texto_limpio"] for tweet in tweets]
 
 # Cargar listas de zonas geográficas

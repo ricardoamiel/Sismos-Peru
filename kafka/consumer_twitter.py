@@ -23,7 +23,7 @@ consumer = KafkaConsumer(
 
 print("Consumidor activo...\n")
 
-max_mensajes = 100
+max_mensajes = 25
 contador = 0
 
 for mensaje in consumer:

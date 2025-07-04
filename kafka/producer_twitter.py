@@ -3,8 +3,10 @@ import time
 from kafka import KafkaProducer
 import json
 import os
+from dotenv import load_dotenv, find_dotenv
 
-bearer_token = os.getenv("X_TOKEN")
+load_dotenv(find_dotenv())
+bearer_token = os.getenv("TWITTER_BEARER_TOKEN")
 
 client = tweepy.Client(bearer_token=bearer_token)
 
@@ -27,33 +29,28 @@ query = '''
 
 
 since_id = None
-ciclos = 0
-max_ciclos = 1
+max_results = 25 # usualmente 25 o 50
 
-while ciclos < max_ciclos:
-    response = client.search_recent_tweets(
-        query=query,
-        tweet_fields=['created_at', 'author_id', 'lang'],
-        max_results=50,
-        since_id=since_id
-    )
-    
-    print(response.meta)
+response = client.search_recent_tweets(
+    query=query,
+    tweet_fields=['created_at', 'author_id', 'lang'],
+    max_results=max_results,
+    since_id=since_id
+)
 
-    if response.data:
-        for tweet in response.data:
-            data = {
-                "id": tweet.id,
-                "usuario": tweet.author_id,
-                "texto": tweet.text,
-                "fecha": str(tweet.created_at),
-            }
-            print(f"Enviando: {data}")
-            producer.send(topic, data)
-        since_id = response.data[0].id
+print(response.meta)
 
-    ciclos += 1
-    #time.sleep(180) # Ahora solo es una llamada de 100 tweets nuevos
+if response.data:
+    for tweet in response.data:
+        data = {
+            "id": tweet.id,
+            "usuario": tweet.author_id,
+            "texto": tweet.text,
+            "fecha": str(tweet.created_at),
+        }
+        print(f"Enviando: {data}")
+        producer.send(topic, data)
+    since_id = response.data[0].id
 
 
 # ==== Finalizar Kafka correctamente ====
